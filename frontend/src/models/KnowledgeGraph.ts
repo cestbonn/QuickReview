@@ -42,4 +42,13 @@ export default class KnowledgeGraph {
     const { nodes, edges } = this;
     return { nodes, edges };
   }
+
+  findRelated(node: Node): Node[] {
+    const result = this.edges
+      .filter((e) => { return e.to === node.id; })
+      .map((e) => { return this.nodes.get(e.from); })
+      .filter(n => (n != undefined)) as Node[];
+
+    return result;
+  }
 }
