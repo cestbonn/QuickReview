@@ -23,7 +23,7 @@ function App() {
         <div className='w-[300px] bg-white shadow-lg rounded-md p-5 flex-none'>
           <h1 className='font-bold text-3xl mb-2'> Edges </h1>
           <div>
-            {kg.edges.map((edge, i) => {
+            {[...kg.edges.values()].map((edge, i) => {
               const from_node = kg.nodes.get(edge.from);
               const to_node = kg.nodes.get(edge.to);
               return <p key={i}>
