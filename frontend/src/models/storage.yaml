@@ -1,0 +1,14 @@
+nodes:
+  - {id: NVPA1I, title: Living Things}
+  - {id: KR3P4M, title: Animal}
+  - {id: D2PDWS, title: Dogs}
+  - {id: QX3XWG, title: Cows}
+  - {id: M8GGP8, title: Plants}
+  - {id: 8FGBF9, title: Herbs}
+edges:
+  - {from: KR3P4M, to: NVPA1I, type: is, id: z340QL}
+  - {from: D2PDWS, to: KR3P4M, type: is, id: bTTmkj}
+  - {from: QX3XWG, to: KR3P4M, type: is, id: gJNLTA}
+  - {from: M8GGP8, to: NVPA1I, type: is, id: 15obuo}
+  - {from: 8FGBF9, to: M8GGP8, type: is, id: OLwevw}
+  - {from: QX3XWG, to: 8FGBF9, type: eat, id: HEiKHG}

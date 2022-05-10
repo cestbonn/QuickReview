@@ -46,23 +46,6 @@ export default class KnowledgeGraph {
   }
 
   constructor() {
-    this.addNode({ id: "NVPA1I", title: "Living Things" });
-    this.addNode({ id: "KR3P4M", title: "Animal" });
-    this.addNode({ id: "D2PDWS", title: "Dogs" });
-    this.addNode({ id: "QX3XWG", title: "Cows" });
-    this.addNode({ id: "M8GGP8", title: "Plants" });
-    this.addNode({ id: "8FGBF9", title: "Herbs" });
-    // this.addNode({ id: "KUGYY6", title: "" });
-    // this.addNode({ id: "NAKDZL", title: "" });
-    // this.addNode({ id: "9HGCK8", title: "" });
-    // this.addNode({ id: "2C65Y4", title: "" });
-
-    this.addEdge({ from: "KR3P4M", to: "NVPA1I", type: "is" });
-    this.addEdge({ from: "D2PDWS", to: "KR3P4M", type: "is" });
-    this.addEdge({ from: "QX3XWG", to: "KR3P4M", type: "is" });
-    this.addEdge({ from: "M8GGP8", to: "NVPA1I", type: "is" });
-    this.addEdge({ from: "8FGBF9", to: "M8GGP8", type: "is" });
-    this.addEdge({ from: "QX3XWG", to: "8FGBF9", type: "eat" });
   }
 
   findRelated(node: Node): Node[] {
@@ -76,7 +59,7 @@ export default class KnowledgeGraph {
   dump() {
     return jsyaml.dump({
       nodes: [...this.nodes.values()],
-      edges: this.edges,
+      edges: [...this.edges.values()],
     }, { flowLevel: 2 });
   }
 
