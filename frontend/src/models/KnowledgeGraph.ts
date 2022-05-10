@@ -1,8 +1,9 @@
 import Edge from "./Edge";
 import Node, { NodeID } from "./Node";
+import jsyaml from "js-yaml";
 
-interface Graph {
-  nodes: Map<NodeID, Node>;
+interface YAMLSchema {
+  nodes: Node[];
   edges: Edge[];
 }
 
@@ -38,17 +39,29 @@ export default class KnowledgeGraph {
     this.addEdge({ from: "QX3XWG", to: "8FGBF9", type: "eat" });
   }
 
-  getGraph(): Graph {
-    const { nodes, edges } = this;
-    return { nodes, edges };
-  }
-
   findRelated(node: Node): Node[] {
     const result = this.edges
       .filter((e) => { return e.to === node.id; })
       .map((e) => { return this.nodes.get(e.from); })
       .filter(n => (n != undefined)) as Node[];
-
     return result;
   }
+
+  dump() {
+    return jsyaml.dump({
+      nodes: [...this.nodes.values()],
+      edges: this.edges,
+    }, { flowLevel: 2 });
+  }
+
+  load(yaml: string) {
+    const y = jsyaml.load(yaml) as YAMLSchema;
+    if (y.edges === undefined || y.nodes === undefined) return;
+
+    this.edges = y.edges;
+    y.nodes.forEach((node) => {
+      this.addNode(node);
+    });
+  }
+
 }
