@@ -5,6 +5,7 @@ import KnowledgeGraph from './models/KnowledgeGraph';
 
 function App() {
   const kg = new KnowledgeGraph();
+  (window as any).kg = kg;
 
   return (
     <div className="flex flex-col h-screen bg-slate-300">
