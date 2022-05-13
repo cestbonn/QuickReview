@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import KnowledgeGraph from '../models/KnowledgeGraph';
 import Node from '../models/Node';
 
@@ -10,17 +10,53 @@ export default function Graph(props: GraphProps) {
   if (!root) return <div></div>;
   const layers = bfs(props.graph, root);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (!containerRef?.current) return;
+    const container = containerRef?.current;
+
+    new ResizeObserver((divList) => {
+      if (!svgRef?.current) return;
+      const svg = svgRef.current;
+
+      const { height, width } = divList[0].contentRect;
+      svg.setAttribute("height", height.toString());
+      svg.setAttribute("width", width.toString());
+      svg.setAttribute('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`);
+
+
+    }).observe(container);
+
+
+  }, [containerRef?.current]);
+
+
+
+
   return (
-    <div className='flex items-center justify-center'>
-      {layers.map((layer, ilayer) => {
-        return (<div key={ilayer} className="flex flex-col">
-          {layer.map((node, inode) => {
-            return (<div key={inode} className="p-2 bg-white m-4 mx-16 rounded-md min-w-[100px] text-center">
-              {node.title}
-            </div>);
-          })}
-        </div>);
-      })}
+    <div ref={containerRef} className='h-full'>
+      <svg ref={svgRef}>
+        {
+          layers.flatMap((layer, i) => {
+            return layer.map((node, j) => {
+              return (
+
+                <g>
+                  <rect key={`${i} ${j}`}
+                    x={i * 200} y={j * 50}
+                    width={120} height={40}
+                    fill='white' rx={10} ry={10}>
+                  </rect>
+                  <text x={i * 200 + 60} y={j * 50 + 20} textAnchor="middle" alignmentBaseline='middle' >{node.title}</text>
+                </g>);
+            });
+          })
+        }
+
+
+      </svg>
     </div>
   );
 }
