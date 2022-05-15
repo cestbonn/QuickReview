@@ -60,6 +60,29 @@ interface NodeLayoutInfoMap {
   [key: string]: NodeLayoutInfo;
 }
 
+const calcArrowPosition = (fromPos: NodeLayoutInfo, toPos: NodeLayoutInfo) => {
+  let { x: x1, y: y1 } = fromPos;
+  let { x: x2, y: y2 } = toPos;
+  if (Math.abs(x1 - x2) > Math.abs(y1 - y2)) {
+    if (x1 > x2) {
+      x1 -= fromPos.w / 2;
+      x2 += toPos.w / 2;
+    } else {
+      x1 += fromPos.w / 2;
+      x2 -= toPos.w / 2;
+    }
+  } else {
+    if (y1 > y2) {
+      y1 -= fromPos.h / 2;
+      y2 += toPos.h / 2;
+    } else {
+      y1 += fromPos.h / 2;
+      y2 -= toPos.h / 2;
+    }
+  }
+  return { x1, x2, y1, y2 };
+};
+
 
 interface GraphProps {
   graph: KnowledgeGraph;
@@ -117,11 +140,28 @@ export default function Graph(props: GraphProps) {
 
       </div>
 
-      <svg className="absolute h-screen w-screen">{
-        Object.entries(nodePos).map(([nodeID, lInfo], i) => {
-          return (<circle key={i} r={10} cx={lInfo.x} cy={lInfo.y} fill="red" />);
-        })
-      }
+      <svg className="absolute h-screen w-screen" xmlns="http://www.w3.org/2000/svg" >
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7"
+            refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" />
+          </marker>
+        </defs>
+        {
+          [...props.graph.edges.entries()].map(([edgeID, edge], iEdge) => {
+            const { from, to } = edge;
+            if (!from || !to) return;
+            const fromPos = nodePos[from];
+            const toPos = nodePos[to];
+            if (!fromPos || !toPos) return;
+            const { x1, x2, y1, y2 } = calcArrowPosition(fromPos, toPos);
+            return <line key={iEdge} stroke="black"
+              {...{ x1, x2, y1, y2 }}
+              markerEnd="url(#arrowhead)"
+            />;
+            return <circle key={iEdge} r={10} cx={fromPos.x} cy={fromPos.y} />;
+          }).filter(a => a)
+        }
       </svg>
     </div>
   );
