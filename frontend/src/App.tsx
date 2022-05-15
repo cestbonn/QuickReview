@@ -10,7 +10,7 @@ function App() {
   (window as any).kg = kg;
 
   return (
-    <div className='h-screen w-screen bg-gray-400'>
+    <div className='h-screen w-screen bg-[url(/src/res/grid.svg)] bg-center bg-slate-50'>
       <Graph graph={kg}></Graph>
     </div>
 

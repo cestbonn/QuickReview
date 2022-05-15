@@ -119,28 +119,11 @@ export default function Graph(props: GraphProps) {
   }, [size]);
 
   return (
+
+
     <div className='relative'>
-      <div className='absolute flex items-center w-full justify-evenly'>
-        {layers.map((layer, ilayer) => {
-          return (<div key={ilayer} className="flex flex-col">
-            {layer.map((node, inode) => {
-              const id = `gnode-${node.id}`;
-              nodeDivIDs.push(id);
-              const div = (<div
-                id={id}
-                key={inode}
-                className="p-2 bg-white m-4 rounded-md min-w-[120px] text-center"
-              >
-                {node.title}
-              </div>);
-              return div;
-            })}
-          </div>);
-        })}
 
-      </div>
-
-      <svg className="absolute h-screen w-screen" xmlns="http://www.w3.org/2000/svg" >
+      <svg className="absolute h-screen w-screen stroke-slate-400 fill-slate-800" xmlns="http://www.w3.org/2000/svg" >
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7"
             refX="10" refY="3.5" orient="auto">
@@ -155,14 +138,45 @@ export default function Graph(props: GraphProps) {
             const toPos = nodePos[to];
             if (!fromPos || !toPos) return;
             const { x1, x2, y1, y2 } = calcArrowPosition(fromPos, toPos);
-            return <line key={iEdge} stroke="black"
-              {...{ x1, x2, y1, y2 }}
-              markerEnd="url(#arrowhead)"
-            />;
+            return <g key={iEdge}>
+              <line
+                {...{ x1, x2, y1, y2 }}
+                markerEnd="url(#arrowhead)"
+              />
+              <text
+                x={(x1 + x2) / 2} y={(y1 + y2) / 2}
+                alignmentBaseline="middle"
+                textAnchor='middle'
+                stroke="black"
+                strokeWidth={0.5}
+              >
+                {edge.type}
+              </text>
+            </g>;
             return <circle key={iEdge} r={10} cx={fromPos.x} cy={fromPos.y} />;
           }).filter(a => a)
         }
       </svg>
+
+
+      <div className='absolute flex items-center w-full justify-evenly'>
+        {layers.map((layer, ilayer) => {
+          return (<div key={ilayer} className="flex flex-col">
+            {layer.map((node, inode) => {
+              const id = `gnode-${node.id}`;
+              nodeDivIDs.push(id);
+              return (<div
+                id={id}
+                key={`${ilayer} ${inode}`}
+                className="p-2 bg-white m-4 rounded-md min-w-[120px] text-center shadow-md border"
+              >
+                {node.title}
+              </div>);
+
+            })}
+          </div>);
+        })}
+      </div>
     </div>
   );
 }
