@@ -45,6 +45,22 @@ export default class KnowledgeGraph {
     this.edges.set(edge.id, edge as Edge);
   }
 
+  findEdge(from: string, to: string) {
+    const result = [...this.edges.entries()]
+      .filter((edge) => { edge[1].from === from; })
+      .filter((edge) => { edge[1].to === to; });
+
+    return result[0][1];
+  }
+
+  getNode(id: string) {
+    return this.nodes.get(id);
+  }
+
+  getEdge(id: string) {
+    return this.edges.get(id);
+  }
+
   constructor() {
   }
 
