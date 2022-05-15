@@ -37,103 +37,76 @@ const completeDocument = (gd: GraphDocument, graph: KnowledgeGraph) => {
   });
 };
 
+const useWindowResize = () => {
+  const [size, setSize] = useState({ h: 0, w: 0 });
+  useLayoutEffect(() => {
+    const updateWindowSize = () => {
+      setSize({ h: window.innerHeight, w: window.innerWidth });
+    };
+    window.addEventListener('resize', updateWindowSize);
+    updateWindowSize();
+    return () => {
+      window.removeEventListener("resize", updateWindowSize);
+    };
+  }, []);
+  return size;
+};
+
+interface NodeLayoutInfo {
+  h: number; w: number; x: number; y: number;
+}
+
+interface NodeLayoutInfoMap {
+  [key: string]: NodeLayoutInfo;
+}
+
+
 interface GraphProps {
   graph: KnowledgeGraph;
 }
 export default function Graph(props: GraphProps) {
-  const [gd, setGd] = useState<GraphDocument>({ edges: {}, nodes: {} });
-  useEffect(() => {
-    console.log('update');
-
-    const gd: GraphDocument = {
-      nodes: {
-        "NVPA1I": { x: 120, y: 144, w: 112, h: 40 },
-        "KR3P4M": { x: 354, y: 102, w: 100, h: 40 },
-        "D2PDWS": { x: 582, y: 66, w: 100, h: 40 },
-        "QX3XWG": { x: 582, y: 138, w: 100, h: 40 },
-        "M8GGP8": { x: 354, y: 174, w: 100, h: 40 },
-        "8FGBF9": { x: 582, y: 210, w: 100, h: 40 },
-      },
-      edges: {
-        "z340QL": {},
-        "bTTmkj": {},
-        "gJNLTA": {},
-        "15obuo": {},
-        "OLwevw": {},
-        "HEiKHG": {},
-      }
-    };
-
-    completeDocument(gd, props.graph);
-    setGd(gd);
-  }, []);
-
   const root = props.graph.nodes.get('NVPA1I');
   if (!root) return <div></div>;
   const layers = bfs(props.graph, root);
 
-  const nodeOnScreen: string[] = [];
+  const nodeDivIDs: string[] = [];
+
+  const size = useWindowResize();
+
+  const [nodePos, setNodePos] = useState<NodeLayoutInfoMap>({});
 
   useLayoutEffect(() => {
-    const observer = new ResizeObserver((elements) => {
-      console.log(gd);
-      const result = elements.map((ele) => {
-        const nodeID = ele.target.id.slice("gnode-".length);
-        const { offsetLeft, offsetTop, offsetHeight, offsetWidth } = ele.target as HTMLDivElement;
-        const x = Math.round(offsetLeft);
-        const y = Math.round(offsetTop);
-        const w = Math.ceil(offsetWidth);
-        const h = Math.ceil(offsetHeight);
+    const nodePositions: NodeLayoutInfoMap = {};
+    nodeDivIDs.forEach((id) => {
+      const nodeID = id.slice('gnode-'.length);
 
+      const nodeDiv = document.getElementById(id);
+      const h = nodeDiv?.offsetHeight;
+      const w = nodeDiv?.offsetWidth;
 
+      if (!h || !w) return;
+      const x = nodeDiv?.offsetLeft + w / 2;
+      const y = nodeDiv?.offsetTop + h / 2;
 
-        setGd((prev) => {
-          return update(prev, {
-            nodes: {
-              [nodeID]: {
-                $set: { x, y, w, h }
-              }
-            }
-
-          });
-        });
-
-
-      });
-      console.log(gd);
-
-      // console.log(yamljs.dump(gd.nodes, { flowLevel: 1 }));
+      if (!x || !y) return;
+      nodePositions[nodeID] = { h, w, x, y };
     });
 
-    nodeOnScreen.forEach((id) => {
-      const ele = document.getElementById(id);
-      observer.observe(ele as HTMLDivElement);
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+    setNodePos(nodePositions);
+  }, [size]);
 
   return (
     <div className='relative'>
-      <svg className="absolute h-screen w-screen">{
-        Object.entries(gd.edges).map(([edgeID, ed], i) => {
-          return (<circle key={i} r={10} cx={ed.fromNode?.x} cy={ed.fromNode?.y} fill="red" />);
-        })
-      }
-      </svg>
-
-      <div className='absolute flex items-center justify-center'>
+      <div className='absolute flex items-center w-full justify-evenly'>
         {layers.map((layer, ilayer) => {
           return (<div key={ilayer} className="flex flex-col">
             {layer.map((node, inode) => {
               const id = `gnode-${node.id}`;
-              nodeOnScreen.push(id);
+              nodeDivIDs.push(id);
               const div = (<div
                 id={id}
                 key={inode}
-                className="p-2 bg-white m-4 mx-16 rounded-md min-w-[120px] text-center"
+                className="p-2 bg-white m-4 rounded-md min-w-[120px] text-center"
               >
                 {node.title}
               </div>);
@@ -141,7 +114,15 @@ export default function Graph(props: GraphProps) {
             })}
           </div>);
         })}
+
       </div>
+
+      <svg className="absolute h-screen w-screen">{
+        Object.entries(nodePos).map(([nodeID, lInfo], i) => {
+          return (<circle key={i} r={10} cx={lInfo.x} cy={lInfo.y} fill="red" />);
+        })
+      }
+      </svg>
     </div>
   );
 }
