@@ -55,25 +55,31 @@ export default function Graph(props: GraphProps) {
   const size = useWindowResize();
 
   const [nodeViewMap, setNodeViewMap] = useState<NodeViewMap>({
-    "NVPA1I": { pos: { x: 0, y: 0 } },
-    "KR3P4M": { pos: { x: 200, y: 0 } },
-    "D2PDWS": { pos: { x: 200, y: 100 } },
+    "NVPA1I": { pos: { x: 200, y: 200 } },
+    "KR3P4M": { pos: { x: 500, y: 100 } },
+    "D2PDWS": { pos: { x: 800, y: 100 } },
+    "QX3XWG": { pos: { x: 800, y: 200 } },
+    "M8GGP8": { pos: { x: 500, y: 300 } },
+    "8FGBF9": { pos: { x: 800, y: 300 } },
   });
   const [nodeSizeMap, setNodeSizeMap] = useState<{ [key: NodeID]: Size; }>({});
 
   const [center, setCenter] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-    setCenter({
-      x: size.w / 3,
-      y: size.h / 2,
-    });
-  }, [size]);
+  // useEffect(() => {
+  //   setCenter({
+  //     x: size.w / 3,
+  //     y: size.h / 2,
+  //   });
+  // }, [size]);
 
   return (
     <div className='relative'>
 
 
-      <svg className="absolute h-screen w-screen stroke-slate-400 fill-slate-800" xmlns="http://www.w3.org/2000/svg" >
+      <svg
+        className="absolute h-screen w-screen stroke-slate-400 fill-slate-800 pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7"
             refX="10" refY="3.5" orient="auto">
@@ -93,6 +99,8 @@ export default function Graph(props: GraphProps) {
             x1 += center.x; x2 += center.x; y1 += center.y; y2 += center.y;
 
             return <g key={iEdge}>
+              <circle cx={x1} cy={y1} r={3} />
+              <circle cx={x2} cy={y2} r={3} />
               <line
                 {...{ x1, x2, y1, y2 }}
                 markerEnd="url(#arrowhead)"
@@ -121,6 +129,13 @@ export default function Graph(props: GraphProps) {
               pos={{ x, y }}
               graphNode={graph.getNode(nodeID)!}
               onResize={(size) => { setNodeSizeMap((original) => ({ ...original, [nodeID]: size })); }}
+              onDrag={(x, y) => {
+                // console.log(x, y);
+
+                setNodeViewMap(
+                  (prev) => ({ ...prev, [nodeID]: { pos: { x, y } } })
+                );
+              }}
             />);
           })
         }</div>

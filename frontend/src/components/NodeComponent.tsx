@@ -1,4 +1,4 @@
-import React, { CSSProperties, MutableRefObject, Ref, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { CSSProperties, MutableRefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Position, Size } from '../models/GraphView';
 import Node from '../models/Node';
 
@@ -20,6 +20,7 @@ interface NodeProps {
   graphNode: Node;
   pos: Position;
   onResize?: (size: Size) => void;
+  onDrag?: (x: number, y: number) => void;
 }
 export default function NodeComponent(props: NodeProps) {
   const ref = useRef(null);
@@ -50,9 +51,19 @@ export default function NodeComponent(props: NodeProps) {
   return (
     <div ref={ref}
       style={posStyle}
-      className="absolute p-2 bg-white m-4 rounded-md min-w-[120px] text-center shadow-md border"
+      className="absolute p-2 bg-white m-4 rounded-md min-w-[120px] text-center shadow-md border select-none"
+      draggable
+      onDrag={(e) => {
+        if (props.onDrag) props.onDrag(e.clientX, e.clientY);
+      }}
+      onDragStart={function (e) {
+        const placeholder = document.createElement('div');
+        e.dataTransfer.setDragImage(placeholder, 0, 0);
+      }}
+      onDragOver={(e) => { e.preventDefault(); }}
     >
       {props.graphNode.title}
-    </div>
+
+    </div >
   );
 }
