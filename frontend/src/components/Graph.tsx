@@ -1,10 +1,7 @@
-import yamljs from 'js-yaml';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import Edge from '../models/Edge';
+import { NodeViewMap, Position, Size } from '../models/GraphView';
 import KnowledgeGraph from '../models/KnowledgeGraph';
-import Node, { NodeID } from '../models/Node';
-import update from 'immutability-helper';
-import { GraphView, Position, Size } from '../models/GraphView';
+import { NodeID } from '../models/Node';
 import NodeComponent from './NodeComponent';
 
 
@@ -57,25 +54,20 @@ export default function Graph(props: GraphProps) {
 
   const size = useWindowResize();
 
-  const graphView: GraphView = {
-    nodes: {
-      "NVPA1I": { pos: { x: 0, y: 0 } },
-      "KR3P4M": { pos: { x: 200, y: 0 } }
-    }
-  };
-
-  const nodeSizeMap: { [key: NodeID]: { h: number, w: number; }; } = {};
+  const [nodeViewMap, setNodeViewMap] = useState<NodeViewMap>({
+    "NVPA1I": { pos: { x: 0, y: 0 } },
+    "KR3P4M": { pos: { x: 200, y: 0 } },
+    "D2PDWS": { pos: { x: 200, y: 100 } },
+  });
+  const [nodeSizeMap, setNodeSizeMap] = useState<{ [key: NodeID]: Size; }>({});
 
   const [center, setCenter] = useState({ x: 0, y: 0 });
   useEffect(() => {
     setCenter({
-      x: size.w / 2,
+      x: size.w / 3,
       y: size.h / 2,
     });
-    console.log(center);
-
   }, [size]);
-
 
   return (
     <div className='relative'>
@@ -91,17 +83,15 @@ export default function Graph(props: GraphProps) {
         {
           [...props.graph.edges.entries()].map(([edgeID, edge], iEdge) => {
             const { from, to } = edge;
+
             if (!from || !to) return;
-            const fromPos = graphView.nodes[from]?.pos;
-            const toPos = graphView.nodes[to]?.pos;
+            const fromPos = nodeViewMap[from]?.pos;
+            const toPos = nodeViewMap[to]?.pos;
+
             if (!fromPos || !toPos) return;
-            // let { x1, x2, y1, y2 } = calcArrowPosition(
-            //   fromPos, toPos, nodeSizeMap[from], nodeSizeMap[to]);
-            // x1 += center.x; x2 += center.x; y1 += center.y; y2 += center.y;
-            const x1 = fromPos.x + center.x;
-            const y1 = fromPos.y + center.y;
-            const x2 = toPos.x + center.x;
-            const y2 = toPos.y + center.y;
+            let { x1, x2, y1, y2 } = calcArrowPosition(fromPos, toPos, nodeSizeMap[from], nodeSizeMap[to]);
+            x1 += center.x; x2 += center.x; y1 += center.y; y2 += center.y;
+
             return <g key={iEdge}>
               <line
                 {...{ x1, x2, y1, y2 }}
@@ -109,8 +99,8 @@ export default function Graph(props: GraphProps) {
               />
               <text
                 x={(x1 + x2) / 2} y={(y1 + y2) / 2}
-                alignmentBaseline="middle"
-                textAnchor='middle'
+                alignmentBaseline="central"
+                textAnchor="middle"
                 stroke="black"
                 strokeWidth={0.5}
               >
@@ -122,22 +112,18 @@ export default function Graph(props: GraphProps) {
       </svg>
 
 
-      <div className='absolute w-full h-screen opacity-50'>
-        <div className='w-full h-full relative'>
-          {
-            Object.entries(graphView.nodes).map(([nodeID, nodeView], iNode) => {
-              let { x, y } = nodeView.pos;
-              x += center.x; y += center.y;
-              console.log({ x, y, loc: 1 });
-
-              return (<NodeComponent key={iNode}
-                pos={{ x, y }}
-                graphNode={graph.getNode(nodeID)!}
-              />);
-
-            })
-          }
-        </div>
+      <div className='absolute w-full h-screen'>
+        <div className='w-full h-full relative'>{
+          Object.entries(nodeViewMap).map(([nodeID, nodeView], iNode) => {
+            let { x, y } = nodeView.pos;
+            x += center.x; y += center.y;
+            return (<NodeComponent key={iNode}
+              pos={{ x, y }}
+              graphNode={graph.getNode(nodeID)!}
+              onResize={(size) => { setNodeSizeMap((original) => ({ ...original, [nodeID]: size })); }}
+            />);
+          })
+        }</div>
       </div>
 
 

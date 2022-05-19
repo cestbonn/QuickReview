@@ -17,9 +17,9 @@ function useDivProperties<T>(
 };
 
 interface NodeProps {
-  graphNode: Node,
-  pos: Position,
-  onResize?: (size: Size) => void; // TODO: call this function
+  graphNode: Node;
+  pos: Position;
+  onResize?: (size: Size) => void;
 }
 export default function NodeComponent(props: NodeProps) {
   const ref = useRef(null);
@@ -39,6 +39,12 @@ export default function NodeComponent(props: NodeProps) {
 
     setPosStyle({ left, top });
   }, [size, props.pos, offset]);
+
+  useEffect(() => {
+    if (props.onResize) {
+      props.onResize(size);
+    }
+  }, [size]);
 
 
   return (
